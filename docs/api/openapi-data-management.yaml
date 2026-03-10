@@ -1,0 +1,378 @@
+openapi: "3.1.0"
+info:
+  title: Chiron Data Management Microservice API
+  description: |
+    REST API for the Data Management microservice.
+    Provides endpoints for AuditLog and PropertyImage resources,
+    migrated from the Java Spring Boot monolith.
+  version: "0.2.0"
+  contact:
+    name: Chiron Team
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+
+tags:
+  - name: audit-logs
+    description: Audit log operations
+  - name: property-images
+    description: Property image upload and retrieval
+  - name: health
+    description: Service health check
+
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      operationId: health_check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  database:
+                    type: string
+                    enum: [ok, unavailable]
+                    example: ok
+                  last_checked:
+                    type: string
+                    format: date-time
+                    nullable: true
+
+  /api/audit-logs:
+    post:
+      tags: [audit-logs]
+      summary: Create an audit log entry
+      operationId: create_audit_log
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuditLogCreate"
+      responses:
+        "201":
+          description: Audit log created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditLogRead"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    get:
+      tags: [audit-logs]
+      summary: List audit logs with pagination
+      operationId: list_audit_logs
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number (1-based)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+        - name: action
+          in: query
+          schema:
+            type: string
+          description: Filter by exact action value
+        - name: entity_type
+          in: query
+          schema:
+            type: string
+          description: Filter by exact entity type
+        - name: user_id
+          in: query
+          schema:
+            type: string
+          description: Filter by exact user ID
+      responses:
+        "200":
+          description: Paginated list of audit logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditLogPage"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/property-images:
+    post:
+      tags: [property-images]
+      summary: Upload a property image
+      operationId: upload_property_image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - property_id
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file (JPEG, PNG, GIF, or WebP; max 10 MB)
+                property_id:
+                  type: string
+                  description: ID of the property this image belongs to
+                caption:
+                  type: string
+                  maxLength: 500
+                  description: Optional image caption
+                display_order:
+                  type: integer
+                  default: 0
+                  description: Sort order for display
+                uploaded_by:
+                  type: string
+                  maxLength: 255
+                  description: Identifier of the uploader
+      responses:
+        "201":
+          description: Image uploaded and metadata stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PropertyImageRead"
+        "413":
+          description: File exceeds 10 MB size limit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+        "415":
+          description: Unsupported media type (non-image file)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    get:
+      tags: [property-images]
+      summary: List property images
+      operationId: list_property_images
+      parameters:
+        - name: property_id
+          in: query
+          schema:
+            type: string
+          description: Filter by property ID
+        - name: uploaded_by
+          in: query
+          schema:
+            type: string
+          description: Filter by uploader identifier
+      responses:
+        "200":
+          description: List of property images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PropertyImageRead"
+
+components:
+  schemas:
+    AuditLogCreate:
+      type: object
+      required:
+        - action
+        - entity_type
+      properties:
+        action:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Action performed
+          example: CREATE
+        entity_type:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Type of entity affected
+          example: Property
+        entity_id:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: ID of the affected entity
+          example: prop-123
+        user_id:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: ID of the acting user
+          example: user-456
+        user_email:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: Email of the acting user
+          example: agent@example.com
+        description:
+          type: string
+          nullable: true
+          description: Human-readable description of the action
+        ip_address:
+          type: string
+          maxLength: 45
+          nullable: true
+          description: Client IP address (IPv4 or IPv6)
+          example: 192.168.1.10
+        user_agent:
+          type: string
+          maxLength: 500
+          nullable: true
+          description: Client user-agent string
+
+    AuditLogRead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+        action:
+          type: string
+          description: Action performed
+        entity_type:
+          type: string
+          description: Type of entity affected
+        entity_id:
+          type: string
+          nullable: true
+        user_id:
+          type: string
+          nullable: true
+        user_email:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        ip_address:
+          type: string
+          nullable: true
+        user_agent:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          description: UTC timestamp when the log was created
+
+    AuditLogPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditLogRead"
+        total:
+          type: integer
+          description: Total number of matching records
+        page:
+          type: integer
+          description: Current page number
+        size:
+          type: integer
+          description: Page size
+        pages:
+          type: integer
+          description: Total number of pages
+
+    PropertyImageRead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+        property_id:
+          type: string
+          description: ID of the associated property
+        filename:
+          type: string
+          description: Stored filename (UUID-prefixed)
+        original_filename:
+          type: string
+          description: Original filename as uploaded
+        content_type:
+          type: string
+          description: MIME type of the file
+          example: image/jpeg
+        file_size:
+          type: integer
+          format: int64
+          description: File size in bytes
+        file_path:
+          type: string
+          description: Absolute path to the stored file
+        caption:
+          type: string
+          nullable: true
+          description: Optional image caption
+        display_order:
+          type: integer
+          nullable: true
+          description: Sort order for display
+        uploaded_by:
+          type: string
+          nullable: true
+          description: Identifier of the uploader
+        created_at:
+          type: string
+          format: date-time
+          description: UTC timestamp when the image was uploaded
+
+    ErrorDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    loc:
+                      type: array
+                      items:
+                        type: string
+                    msg:
+                      type: string
+                    type:
+                      type: string

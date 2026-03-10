@@ -16,5 +16,8 @@ class Settings(BaseSettings):
     # PostgreSQL
     database_url: str = "postgresql://chiron:chiron@db:5432/chiron"
 
+    # File uploads
+    upload_dir: str = "/app/uploads"
+
 
 settings = Settings()
