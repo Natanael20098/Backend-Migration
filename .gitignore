@@ -31,3 +31,22 @@ frontend/out/
 .pids/
 .logs/
 .claude/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/.env
+
+# Docker
+postgres_data/
