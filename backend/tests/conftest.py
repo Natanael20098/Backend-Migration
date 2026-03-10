@@ -33,6 +33,8 @@ def unit_engine():
     import app.models.health_check  # noqa: F401
     import app.models.notification  # noqa: F401
     import app.models.otp_code  # noqa: F401
+    import app.models.loan_application  # noqa: F401
+    import app.models.loan_payment  # noqa: F401
     from app.core.database import Base
 
     Base.metadata.create_all(bind=sqlite_engine)
@@ -98,6 +100,8 @@ def pg_engine():
     import app.models.health_check  # noqa: F401
     import app.models.notification  # noqa: F401
     import app.models.otp_code  # noqa: F401
+    import app.models.loan_application  # noqa: F401
+    import app.models.loan_payment  # noqa: F401
     from app.core.database import Base
 
     engine = sa_create_engine(PG_URL, pool_pre_ping=True)
