@@ -26,12 +26,16 @@ services:
       - "8000:8000"
     environment:
       APP_NAME: Chiron Backend
-      APP_VERSION: "0.1.0"
+      APP_VERSION: "0.2.0"
       DEBUG: "true"
       DATABASE_URL: postgresql://chiron:chiron@db:5432/chiron
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   postgres_data:
+  uploads_data:

@@ -7,11 +7,15 @@ from app.core.database import Base, engine, check_database_connection
 from app.routers import health
 from app.routers import notifications
 from app.routers import otp_codes
+from app.routers import audit_logs
+from app.routers import property_images
 
 # Import models so SQLAlchemy registers them with Base metadata before create_all
 import app.models.health_check  # noqa: F401
 import app.models.notification  # noqa: F401
 import app.models.otp_code  # noqa: F401
+import app.models.audit_log  # noqa: F401
+import app.models.property_image  # noqa: F401
 
 
 @asynccontextmanager
@@ -34,6 +38,8 @@ app = FastAPI(
 app.include_router(health.router)
 app.include_router(notifications.router)
 app.include_router(otp_codes.router)
+app.include_router(audit_logs.router)
+app.include_router(property_images.router)
 
 
 @app.get("/")
