@@ -1,0 +1,11 @@
+[1;33m[WARN][0m  DRY-RUN mode — no live changes will be made.
+[0;32m[INFO][0m  Log file: logs/cutover_20260310_004515.log
+[0;32m[INFO][0m  New service: http://localhost:8000
+[0;32m[INFO][0m  Old service: http://localhost:8080
+
+[0;32m══════════════════════════════════[0m
+[0;32m  STEP: 1/8 — Pre-flight checks[0m
+[0;32m══════════════════════════════════[0m
+[1;33m[WARN][0m  New service (FastAPI) is NOT reachable at http://localhost:8000
+[0;31m[ERROR][0m New service health check FAILED — cutover aborted.
+[0;31m[ERROR][0m Start the stack first:  docker compose up -d

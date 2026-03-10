@@ -1,0 +1,8 @@
+[1;33m[WARN][0m  DRY-RUN mode — no live changes will be made.
+[0;32m[INFO][0m  Log file: logs/decommission_20260310_004520.log
+
+[0;32m══════════════════════════════════[0m
+[0;32m  STEP: 1/5 — Safety gate: new service health check[0m
+[0;32m══════════════════════════════════[0m
+[0;31m[ERROR][0m New service health check FAILED (HTTP 000000).
+[0;31m[ERROR][0m Decommission aborted — do not remove the old system while the new one is unhealthy.
