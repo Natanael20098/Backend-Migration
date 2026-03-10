@@ -31,6 +31,8 @@ def unit_engine():
     """Create all tables in the in-memory SQLite DB once per test session."""
     # Import models to ensure they are registered with Base before create_all
     import app.models.health_check  # noqa: F401
+    import app.models.notification  # noqa: F401
+    import app.models.otp_code  # noqa: F401
     from app.core.database import Base
 
     Base.metadata.create_all(bind=sqlite_engine)
@@ -94,6 +96,8 @@ def pg_engine():
     """
     from sqlalchemy import create_engine as sa_create_engine
     import app.models.health_check  # noqa: F401
+    import app.models.notification  # noqa: F401
+    import app.models.otp_code  # noqa: F401
     from app.core.database import Base
 
     engine = sa_create_engine(PG_URL, pool_pre_ping=True)
